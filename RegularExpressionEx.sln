@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RegularExpressionEx", "RegularExpressionEx\RegularExpressionEx.vcproj", "{962342EF-4522-42BD-A6B7-BC8BA790F42B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{962342EF-4522-42BD-A6B7-BC8BA790F42B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{962342EF-4522-42BD-A6B7-BC8BA790F42B}.Debug|Win32.Build.0 = Debug|Win32
+		{962342EF-4522-42BD-A6B7-BC8BA790F42B}.Release|Win32.ActiveCfg = Release|Win32
+		{962342EF-4522-42BD-A6B7-BC8BA790F42B}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
