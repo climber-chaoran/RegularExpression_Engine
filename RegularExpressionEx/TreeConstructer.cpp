@@ -31,9 +31,9 @@ BOOL CTreeConstructer::SetPattern(const CString strPattern)
 BOOL CTreeConstructer::EvaluateOneDestOperation(CToken *pToken)
 {    
     BOOL        bRet    = TRUE;
-    CNodeOnTree *pNode  = NULL;
+    CNodeInTree *pNode  = NULL;
 
-    pNode = new (std::nothrow)CNodeOnTree;
+    pNode = new (std::nothrow)CNodeInTree;
     m_nNodeCount++;
     CHECK_POINT(pNode);
     pNode->m_pToken = pToken;
@@ -59,7 +59,7 @@ Exit0:
 BOOL CTreeConstructer::EvaluateTwoDestOperation()
 {
     BOOL        bRet            = FALSE;
-    CNodeOnTree *pNode          = NULL;
+    CNodeInTree *pNode          = NULL;
     CToken      *pToken         = NULL;
 
     pToken = m_stkOperation.top();
@@ -70,7 +70,7 @@ BOOL CTreeConstructer::EvaluateTwoDestOperation()
     }
     m_stkOperation.pop();
 
-    pNode = new (std::nothrow)CNodeOnTree;
+    pNode = new (std::nothrow)CNodeInTree;
     CHECK_POINT(pNode);
     m_nNodeCount++;
     pNode->m_pToken = pToken;
@@ -154,6 +154,11 @@ BOOL CTreeConstructer::Evaluate(CToken *pCurrentToken)
         }
         break;
     case eType_RIGHTPARENTHESIS:
+        // if there are nothing between a pair of parentheses, it is wrong
+        if (eType_LEFTPARENTHESIS == m_LastTokenType)
+        {
+            goto Exit0;
+        }
         while (!m_stkOperation.empty() &&
             eType_LEFTPARENTHESIS != (m_stkOperation.top()->GetType()))
         {
@@ -205,13 +210,14 @@ BOOL CTreeConstructer::IsNeedAddConcatToken(CToken *pToken)
     return FALSE;
 }
 
-BOOL CTreeConstructer::ConstructSyntaxTree(CNodeOnTree **pNode)
+BOOL CTreeConstructer::ConstructSyntaxTree(CNodeInTree **pNode)
 {
     BOOL        bRet            = FALSE;
     CToken      *pTokenConcat   = NULL;
     CToken      *pToken         = NULL;
-    CNodeOnTree *pNormalNode    = NULL;
+    CNodeInTree *pNormalNode    = NULL;
     BOOL        bLoopFlag       = TRUE;
+    node_type   nodeType;
 
     m_LastTokenType = eType_END;
     m_nId           = 0;
@@ -249,15 +255,16 @@ BOOL CTreeConstructer::ConstructSyntaxTree(CNodeOnTree **pNode)
 
         if (pToken->IsOperation())
         {
-            m_LastTokenType = pToken->GetType();
+            nodeType = pToken->GetType();
             CHECK_BOOL ( Evaluate(pToken) );
+            m_LastTokenType = nodeType;
             pToken = NULL;
         }
         else
         {
             // normal char
             pToken->SetId(++m_nId);
-            pNormalNode = new (std::nothrow) CNodeOnTree;
+            pNormalNode = new (std::nothrow) CNodeInTree;
             m_nNodeCount++;
             CHECK_POINT(pNormalNode);
             pNormalNode->m_pToken = pToken;
@@ -306,7 +313,7 @@ Exit0:
     return bRet;
 }
 
-void CTreeConstructer::ReleaseNode(CNodeOnTree *&pNode)
+void CTreeConstructer::ReleaseNode(CNodeInTree *&pNode)
 {
     if (!pNode)
         return;
@@ -330,7 +337,7 @@ void CTreeConstructer::CleanStack()
 {
     while (!m_stkOperateValue.empty())
     {
-        CNodeOnTree *pNode = m_stkOperateValue.top();
+        CNodeInTree *pNode = m_stkOperateValue.top();
         m_stkOperateValue.pop();
         ReleaseNode(pNode);
     }

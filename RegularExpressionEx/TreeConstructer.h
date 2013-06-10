@@ -10,9 +10,9 @@ public:
     CTreeConstructer(void);
     ~CTreeConstructer(void);
 public:
-    BOOL ConstructSyntaxTree(CNodeOnTree **pNode);
+    BOOL ConstructSyntaxTree(CNodeInTree **pNode);
     BOOL SetPattern(const CString strPattern);
-    void ReleaseNode(CNodeOnTree *&pNode);
+    void ReleaseNode(CNodeInTree *&pNode);
 
 private:
     void CleanStack();
@@ -23,7 +23,7 @@ private:
 
 private:
     std::stack<CToken*>         m_stkOperation;
-    std::stack<CNodeOnTree*>    m_stkOperateValue;
+    std::stack<CNodeInTree*>    m_stkOperateValue;
     node_type                   m_LastTokenType;
     CLex                        m_Lex;
     int                         m_nNodeCount;           // for debug

@@ -253,9 +253,9 @@ Exit0:
     return bRet;
 }
 
-BOOL CDFA::IsNodeSetInList(set<CNodeOnTree*> &setNodeNext, int &nIdx)
+BOOL CDFA::IsNodeSetInList(set<CNodeInTree*> &setNodeNext, int &nIdx)
 {
-    list<set<CNodeOnTree*>>::iterator it = m_lstSet.begin();
+    list<set<CNodeInTree*>>::iterator it = m_lstSet.begin();
     for (nIdx = 0; it != m_lstSet.end(); it++, nIdx++)
     {
         if (*it == setNodeNext)
@@ -266,9 +266,9 @@ BOOL CDFA::IsNodeSetInList(set<CNodeOnTree*> &setNodeNext, int &nIdx)
     return FALSE;
 }
 
-BOOL CDFA::IsContainAcceptingState(set<CNodeOnTree*> &setNode)
+BOOL CDFA::IsContainAcceptingState(set<CNodeInTree*> &setNode)
 {
-    for (set<CNodeOnTree*>::iterator it = setNode.begin(); it != setNode.end(); it++)
+    for (set<CNodeInTree*>::iterator it = setNode.begin(); it != setNode.end(); it++)
     {
         if (eType_END == (*it)->m_pToken->GetType())
         {
@@ -278,14 +278,14 @@ BOOL CDFA::IsContainAcceptingState(set<CNodeOnTree*> &setNode)
     return FALSE;
 }
 
-BOOL CDFA::CreateDFA(CNodeOnTree *pNode)
+BOOL CDFA::CreateDFA(CNodeInTree *pNode)
 {
     int                                     nIdxCur = 0;
     int                                     nIdxNext= 0;
     BOOL                                    bRet    = FALSE;
-    vector<CNodeOnTree*>::iterator          itNode  = pNode->m_vecFirstPos.begin();
-    set<CNodeOnTree*>                       setNode;
-    map<unsigned char, set<CNodeOnTree*>>   mapSet;
+    vector<CNodeInTree*>::iterator          itNode  = pNode->m_vecFirstPos.begin();
+    set<CNodeInTree*>                       setNode;
+    map<unsigned char, set<CNodeInTree*>>   mapSet;
 
     m_lstSet.clear();
     m_lstNodeRelation.clear();
@@ -306,14 +306,14 @@ BOOL CDFA::CreateDFA(CNodeOnTree *pNode)
         // end prepare start state
 
         // Construct DFA set, translation relation.
-        list<set<CNodeOnTree*>>::iterator it = m_lstSet.begin();
+        list<set<CNodeInTree*>>::iterator it = m_lstSet.begin();
         for ( ; it != m_lstSet.end(); it++, nIdxCur++)
         {
             mapSet.clear();
             setNode.clear();
             setNode = *it;
             // collect all translation char into mapSet
-            set<CNodeOnTree*>::iterator itSet = setNode.begin();
+            set<CNodeInTree*>::iterator itSet = setNode.begin();
             for ( ; itSet != setNode.end(); itSet++ )
             {
                 unsigned char ch = (*itSet)->m_pToken->GetChar();
@@ -322,12 +322,12 @@ BOOL CDFA::CreateDFA(CNodeOnTree *pNode)
             // end collect
 
             // for each translation char, get the set that correspond to translation char
-            map<unsigned char, set<CNodeOnTree*>>::iterator itMap = mapSet.begin();
+            map<unsigned char, set<CNodeInTree*>>::iterator itMap = mapSet.begin();
             for ( ; itMap != mapSet.end(); itMap++ )
             {
                 unsigned char ch = itMap->first;
-                set<CNodeOnTree*> & setNodeTemp = itMap->second;
-                set<CNodeOnTree*> setNodeNext;
+                set<CNodeInTree*> & setNodeTemp = itMap->second;
+                set<CNodeInTree*> setNodeNext;
                 // get the union of followpos(p) for all p in the setNodeTemp
                 CHECK_BOOL ( GetNextSet(setNodeTemp, setNodeNext) );
                 if (setNodeNext.empty())
@@ -357,15 +357,15 @@ Exit0:
     return bRet;
 }
 
-BOOL CDFA::GetNextSet(set<CNodeOnTree*> & setNodeTemp, set<CNodeOnTree*> & setNodeNext)
+BOOL CDFA::GetNextSet(set<CNodeInTree*> & setNodeTemp, set<CNodeInTree*> & setNodeNext)
 {
     BOOL                        bRet    = FALSE;
-    set<CNodeOnTree*>::iterator it      = setNodeTemp.begin();
+    set<CNodeInTree*>::iterator it      = setNodeTemp.begin();
 
     for ( ; it != setNodeTemp.end(); it++ )
     {
-        vector<CNodeOnTree*> & vecFollowPos = (*it)->m_vecFollowPos;
-        vector<CNodeOnTree*>::iterator itVec = vecFollowPos.begin();
+        vector<CNodeInTree*> & vecFollowPos = (*it)->m_vecFollowPos;
+        vector<CNodeInTree*>::iterator itVec = vecFollowPos.begin();
         for ( ; itVec != vecFollowPos.end(); itVec++ )
         {
             try 

@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "NodeOnTree.h"
 
-CNodeOnTree::CNodeOnTree(void)
+CNodeInTree::CNodeInTree(void)
 {
     m_Node1         = NULL;
     m_Node2         = NULL;
@@ -14,11 +14,11 @@ enum
     LEFT_CHILD,
 };
 
-CNodeOnTree::~CNodeOnTree(void)
+CNodeInTree::~CNodeInTree(void)
 {
 }
 
-void CNodeOnTree::ShowPrefix(int nDeep, int iChild)
+void CNodeInTree::ShowPrefix(int nDeep, int iChild)
 {
     for (int i = 0; i < nDeep-1; i++)
         m_str += "       ";
@@ -29,7 +29,7 @@ void CNodeOnTree::ShowPrefix(int nDeep, int iChild)
         m_str += " ©¸©¤©¤";
 }
 
-CString CNodeOnTree::ShowAllNode()
+CString CNodeInTree::ShowAllNode()
 {
     m_str = "";
     // if right chlid is End flag, only show left child
@@ -45,7 +45,7 @@ CString CNodeOnTree::ShowAllNode()
     return m_str;
 }
 
-void CNodeOnTree::ShowNode(int nDeep, int iChild)
+void CNodeInTree::ShowNode(int nDeep, int iChild)
 {
     if (m_Node2)
     {
@@ -79,16 +79,16 @@ void CNodeOnTree::ShowNode(int nDeep, int iChild)
     }
 }
 
-BOOL CNodeOnTree::CalculateAllFunction()
+BOOL CNodeInTree::CalculateAllFunction()
 {
     return CalculateFunction(this);
 }
 
-BOOL CNodeOnTree::CopyVector(vector<CNodeOnTree*> &m_vecDest, vector<CNodeOnTree*> &m_vecScr)
+BOOL CNodeInTree::CopyVector(vector<CNodeInTree*> &m_vecDest, vector<CNodeInTree*> &m_vecScr)
 {
     try
     {
-        for (vector<CNodeOnTree*>::iterator it = m_vecScr.begin();
+        for (vector<CNodeInTree*>::iterator it = m_vecScr.begin();
             it != m_vecScr.end();
             it++)
         {
@@ -102,7 +102,7 @@ BOOL CNodeOnTree::CopyVector(vector<CNodeOnTree*> &m_vecDest, vector<CNodeOnTree
     return TRUE;
 }
 
-BOOL CNodeOnTree::CalculateFunction(CNodeOnTree *pNode)
+BOOL CNodeInTree::CalculateFunction(CNodeInTree *pNode)
 {
     BOOL bRet = FALSE;
     if (!pNode)
@@ -165,14 +165,14 @@ Exit0:
     return bRet;
 }
 
-BOOL CNodeOnTree::CalcFollowPos(CNodeOnTree *pNode)
+BOOL CNodeInTree::CalcFollowPos(CNodeInTree *pNode)
 {
     BOOL bRet = FALSE;
 
     switch (pNode->m_pToken->GetType())
     {
     case eType_STAR:
-        for (vector<CNodeOnTree*>::iterator it = pNode->m_vecLastPos.begin();
+        for (vector<CNodeInTree*>::iterator it = pNode->m_vecLastPos.begin();
              it != pNode->m_vecLastPos.end();
              it++)
         {
@@ -180,7 +180,7 @@ BOOL CNodeOnTree::CalcFollowPos(CNodeOnTree *pNode)
         }
     	break;
     case eType_CONCAT:
-        for (vector<CNodeOnTree*>::iterator it = pNode->m_Node1->m_vecLastPos.begin();
+        for (vector<CNodeInTree*>::iterator it = pNode->m_Node1->m_vecLastPos.begin();
             it != pNode->m_Node1->m_vecLastPos.end();
             it++)
         {

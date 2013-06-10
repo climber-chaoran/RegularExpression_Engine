@@ -6,31 +6,31 @@
 using namespace std;
 
 
-class CNodeOnTree
+class CNodeInTree
 {
 public:
-    CNodeOnTree(void);
-    ~CNodeOnTree(void);
+    CNodeInTree(void);
+    ~CNodeInTree(void);
 
 public:
-    CNodeOnTree             * m_Node1;
-    CNodeOnTree             * m_Node2;
+    CNodeInTree             * m_Node1;
+    CNodeInTree             * m_Node2;
     CToken                  *m_pToken;
     CString                 m_str;
 
     BOOL                    m_bNullAble;
-    vector<CNodeOnTree*>    m_vecFirstPos;
-    vector<CNodeOnTree*>    m_vecLastPos;
-    vector<CNodeOnTree*>    m_vecFollowPos;
+    vector<CNodeInTree*>    m_vecFirstPos;
+    vector<CNodeInTree*>    m_vecLastPos;
+    vector<CNodeInTree*>    m_vecFollowPos;
 
 public:
     CString ShowAllNode();
     BOOL CalculateAllFunction();
-    static BOOL CalculateFunction(CNodeOnTree *);
+    static BOOL CalculateFunction(CNodeInTree *);
 
 private:
     void ShowNode(int nDeep, int iChild);
     void ShowPrefix(int nDeep, int iChild);
-    static BOOL CopyVector(vector<CNodeOnTree*> &m_vecDest, vector<CNodeOnTree*> &m_vecScr);
-    static BOOL CalcFollowPos(CNodeOnTree *pNode);
+    static BOOL CopyVector(vector<CNodeInTree*> &m_vecDest, vector<CNodeInTree*> &m_vecScr);
+    static BOOL CalcFollowPos(CNodeInTree *pNode);
 };

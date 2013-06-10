@@ -33,7 +33,7 @@ public:
     BOOL RegExpToDFA(CString strPattern);
     BOOL ConstructDFA();
     BOOL CreateSyntaxTree();
-    BOOL CreateDFA(CNodeOnTree *pNode);
+    BOOL CreateDFA(CNodeInTree *pNode);
     BOOL MinimizeDFA(int                     nSetSize,
                      list<DFANodeRelation>   &lstNodeRelation,
                      set<int>                &setAcceptingIdx,
@@ -45,9 +45,9 @@ public:
     }
 
 private:
-    BOOL GetNextSet(set<CNodeOnTree*> & setNodeTemp, set<CNodeOnTree*> & setNodeNext);
-    BOOL IsNodeSetInList(set<CNodeOnTree*> &setNodeNext, int &nIdx);
-    BOOL IsContainAcceptingState(set<CNodeOnTree*> &setNode);
+    BOOL GetNextSet(set<CNodeInTree*> & setNodeTemp, set<CNodeInTree*> & setNodeNext);
+    BOOL IsNodeSetInList(set<CNodeInTree*> &setNodeNext, int &nIdx);
+    BOOL IsContainAcceptingState(set<CNodeInTree*> &setNode);
     BOOL PartitionGroups(list<set<int>> &lstSet, list<DFANodeRelation> &lstNodeRelation);
     BOOL PartitionGroup(list<set<int>> &lstSet, set<int> &setStates, 
                         list<DFANodeRelation> &lstNodeRelation, map<int, set<int>> &mapTemp);
@@ -55,12 +55,12 @@ private:
     int  FindIdxInListSet(int nMapToIdx, list<set<int>> &lstSet);
 
 private:
-    CNodeOnTree             *m_pSyntaxNode;
+    CNodeInTree             *m_pSyntaxNode;
     CTreeConstructer        m_TreeConstructer;
     CString                 m_strPattern;
     CString                 m_strTree;
 
-    list<set<CNodeOnTree*>> m_lstSet;
+    list<set<CNodeInTree*>> m_lstSet;
     list<set<int>>          m_lstFinalSet;
     list<DFANodeRelation>   m_lstNodeRelation;
     set<int>                m_setAcceptingIdx;
