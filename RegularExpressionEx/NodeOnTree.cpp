@@ -84,7 +84,37 @@ BOOL CNodeInTree::CalculateAllFunction()
     return CalculateFunction(this);
 }
 
-BOOL CNodeInTree::CopyVector(vector<CNodeInTree*> &m_vecDest, vector<CNodeInTree*> &m_vecScr)
+void CNodeInTree::ShowAllFunction(CNodeInTree *pNode)
+{
+    if (!pNode)
+    {
+        return;
+    }
+    ShowAllFunction(pNode->m_Node1);
+    ShowAllFunction(pNode->m_Node2);
+    CString csString;
+    for (unsigned int i = 0; i < pNode->m_vecFirstPos.size(); i++)
+    {
+        csString.Format(_T("%s %c"), csString, pNode->m_vecFirstPos[i]->m_pToken->GetChar());
+    }
+    OutputDebugString(csString);
+    OutputDebugString(" :: ");
+    csString = "";
+    for (unsigned int i = 0; i < pNode->m_vecLastPos.size(); i++)
+    {
+        csString.Format(_T("%s %c"), csString, pNode->m_vecLastPos[i]->m_pToken->GetChar());
+    }
+    OutputDebugString(csString);
+    OutputDebugString(" :: ");
+    csString = "";
+    for (unsigned int i = 0; i < pNode->m_vecFollowPos.size(); i++)
+    {
+        csString.Format(_T("%s %c"), csString, pNode->m_vecFollowPos[i]->m_pToken->GetChar());
+    }
+    OutputDebugString(csString);
+    OutputDebugString("\n");
+}
+BOOL CNodeInTree::AppendVector(vector<CNodeInTree*> &m_vecDest, vector<CNodeInTree*> &m_vecScr)
 {
     try
     {
@@ -129,31 +159,31 @@ BOOL CNodeInTree::CalculateFunction(CNodeInTree *pNode)
     	break;
     case eType_STAR:
         pNode->m_bNullAble = TRUE;
-        CHECK_BOOL ( CopyVector(pNode->m_vecFirstPos, pNode->m_Node1->m_vecFirstPos) );
-        CHECK_BOOL ( CopyVector(pNode->m_vecLastPos, pNode->m_Node1->m_vecLastPos) );
+        CHECK_BOOL ( AppendVector(pNode->m_vecFirstPos, pNode->m_Node1->m_vecFirstPos) );
+        CHECK_BOOL ( AppendVector(pNode->m_vecLastPos, pNode->m_Node1->m_vecLastPos) );
         CHECK_BOOL ( CalcFollowPos(pNode) );
         break;
     case eType_UNION:
         pNode->m_bNullAble = pNode->m_Node1->m_bNullAble || pNode->m_Node2->m_bNullAble;
-        CHECK_BOOL ( CopyVector(pNode->m_vecFirstPos, pNode->m_Node1->m_vecFirstPos) );
-        CHECK_BOOL ( CopyVector(pNode->m_vecFirstPos, pNode->m_Node2->m_vecFirstPos) );
-        CHECK_BOOL ( CopyVector(pNode->m_vecLastPos, pNode->m_Node1->m_vecLastPos) );
-        CHECK_BOOL ( CopyVector(pNode->m_vecLastPos, pNode->m_Node2->m_vecLastPos) );
+        CHECK_BOOL ( AppendVector(pNode->m_vecFirstPos, pNode->m_Node1->m_vecFirstPos) );
+        CHECK_BOOL ( AppendVector(pNode->m_vecFirstPos, pNode->m_Node2->m_vecFirstPos) );
+        CHECK_BOOL ( AppendVector(pNode->m_vecLastPos, pNode->m_Node1->m_vecLastPos) );
+        CHECK_BOOL ( AppendVector(pNode->m_vecLastPos, pNode->m_Node2->m_vecLastPos) );
         break;
     case eType_CONCAT:
         pNode->m_bNullAble = pNode->m_Node1->m_bNullAble && pNode->m_Node2->m_bNullAble;
         // firstpos(n)
-        CHECK_BOOL ( CopyVector(pNode->m_vecFirstPos, pNode->m_Node1->m_vecFirstPos) );
+        CHECK_BOOL ( AppendVector(pNode->m_vecFirstPos, pNode->m_Node1->m_vecFirstPos) );
         if (pNode->m_Node1->m_bNullAble)
         {
-            CHECK_BOOL ( CopyVector(pNode->m_vecFirstPos, pNode->m_Node2->m_vecFirstPos) );
+            CHECK_BOOL ( AppendVector(pNode->m_vecFirstPos, pNode->m_Node2->m_vecFirstPos) );
         }
         // lastpos(n)
         if (pNode->m_Node2->m_bNullAble)
         {
-            CHECK_BOOL ( CopyVector(pNode->m_vecLastPos, pNode->m_Node1->m_vecLastPos) );
+            CHECK_BOOL ( AppendVector(pNode->m_vecLastPos, pNode->m_Node1->m_vecLastPos) );
         }
-        CHECK_BOOL ( CopyVector(pNode->m_vecLastPos, pNode->m_Node2->m_vecLastPos) );
+        CHECK_BOOL ( AppendVector(pNode->m_vecLastPos, pNode->m_Node2->m_vecLastPos) );
         CHECK_BOOL ( CalcFollowPos(pNode) );
         break;
     default:
@@ -176,7 +206,7 @@ BOOL CNodeInTree::CalcFollowPos(CNodeInTree *pNode)
              it != pNode->m_vecLastPos.end();
              it++)
         {
-            CopyVector((*it)->m_vecFollowPos, pNode->m_vecFirstPos);
+            AppendVector((*it)->m_vecFollowPos, pNode->m_vecFirstPos);
         }
     	break;
     case eType_CONCAT:
@@ -184,7 +214,7 @@ BOOL CNodeInTree::CalcFollowPos(CNodeInTree *pNode)
             it != pNode->m_Node1->m_vecLastPos.end();
             it++)
         {
-            CopyVector((*it)->m_vecFollowPos, pNode->m_Node2->m_vecFirstPos);
+            AppendVector((*it)->m_vecFollowPos, pNode->m_Node2->m_vecFirstPos);
         }
         break;
     default:

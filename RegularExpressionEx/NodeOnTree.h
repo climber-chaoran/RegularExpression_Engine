@@ -26,11 +26,12 @@ public:
 public:
     CString ShowAllNode();
     BOOL CalculateAllFunction();
+    void ShowAllFunction(CNodeInTree *pNode);
     static BOOL CalculateFunction(CNodeInTree *);
 
 private:
     void ShowNode(int nDeep, int iChild);
     void ShowPrefix(int nDeep, int iChild);
-    static BOOL CopyVector(vector<CNodeInTree*> &m_vecDest, vector<CNodeInTree*> &m_vecScr);
+    static BOOL AppendVector(vector<CNodeInTree*> &m_vecDest, vector<CNodeInTree*> &m_vecScr);
     static BOOL CalcFollowPos(CNodeInTree *pNode);
 };

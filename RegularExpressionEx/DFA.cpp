@@ -229,6 +229,7 @@ BOOL CDFA::ConstructDFA()
     BOOL bRet = FALSE;
     CHECK_BOOL ( CreateSyntaxTree() );
     CHECK_BOOL ( m_pSyntaxNode->CalculateAllFunction() );
+    m_pSyntaxNode->ShowAllFunction(m_pSyntaxNode);
     CHECK_BOOL ( CreateDFA(m_pSyntaxNode) );
     CHECK_BOOL ( MinimizeDFA(m_lstSet.size(), m_lstNodeRelation, 
                              m_setAcceptingIdx, m_lstFinalSet) );
