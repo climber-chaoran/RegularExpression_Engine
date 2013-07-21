@@ -24,6 +24,16 @@ void TestMinimizeDFA()
 
     dfa.MinimizeDFA(nSetSize, lstNodeRelation, setAcceptingIdx, lstSet);
 
+    list<set<int>>::iterator it = lstSet.begin();
+    assert(*(it->begin()) == 4);
+    it++;
+    assert(*(it->begin()) == 3);
+    it++;
+    assert(*(it->begin()) == 1);
+    it++;
+    assert(*(it->begin()) == 0);
+    assert(*(++(it->begin())) == 2);
+
     return;
 }
 
@@ -56,14 +66,14 @@ Exit0:
 }
 
 BOOL CDFA::FindRelationNode(list<DFANodeRelation> &lstNodeRelation, 
-                            int nIdx, unsigned char ch, int &nMapToIdx)
+                            int nIdxFrom, unsigned char ch, int &nMapToIdx)
 {
     list<DFANodeRelation>::iterator it = lstNodeRelation.begin();
     for ( ; it != lstNodeRelation.end(); it++)
     {
-        if (it->m_nIdxCur == nIdx && it->m_ch == ch)
+        if (it->m_nIdxFrom == nIdxFrom && it->m_ch == ch)
         {
-            nMapToIdx = it->m_nIdxNext;
+            nMapToIdx = it->m_nIdxTo;
             return TRUE;
         }
     }
@@ -87,9 +97,9 @@ int CDFA::FindIdxInListSet(int nMapToIdx, list<set<int>> &lstSet)
     return -1;
 }
 
-BOOL CDFA::PartitionGroup(list<set<int>> &lstSet, set<int> &setStates, 
-                          list<DFANodeRelation> &lstNodeRelation, 
-                          map<int, set<int>> &mapTemp)
+BOOL CDFA::PartitionOneGroup(list<set<int>> &lstSet, set<int> &setOneGroup, 
+                             list<DFANodeRelation> &lstNodeRelation, 
+                             map<int, set<int>> &mapPartitionInfo)
 {
     BOOL            bRet            = FALSE;
     list<DFANodeRelation>::iterator itRelation;
@@ -99,11 +109,11 @@ BOOL CDFA::PartitionGroup(list<set<int>> &lstSet, set<int> &setStates,
     try
     {
         // collect each node's translation char in the set
-        for (set<int>::iterator it = setStates.begin(); it != setStates.end(); it++)
+        for (set<int>::iterator it = setOneGroup.begin(); it != setOneGroup.end(); it++)
         {
             for (itRelation = lstNodeRelation.begin(); itRelation != lstNodeRelation.end(); itRelation++)
             {
-                if (itRelation->m_nIdxCur == *it)
+                if (itRelation->m_nIdxFrom == *it)
                 {
                     setChar.insert(itRelation->m_ch);
                 }
@@ -113,21 +123,21 @@ BOOL CDFA::PartitionGroup(list<set<int>> &lstSet, set<int> &setStates,
 
         for (set<unsigned char>::iterator it = setChar.begin(); it != setChar.end(); it++)
         {
-            mapTemp.clear();
+            mapPartitionInfo.clear();
             int nMapToIdx = -1; // indicate map to a dead state, there no translation for this pair of node/char
-            for (set<int>::iterator itSet = setStates.begin(); itSet != setStates.end(); itSet++)
+            for (set<int>::iterator itNodeId = setOneGroup.begin(); itNodeId != setOneGroup.end(); itNodeId++)
             {
-                if (FindRelationNode(lstNodeRelation, *itSet, *it, nMapToIdx))
+                if (FindRelationNode(lstNodeRelation, *itNodeId, *it, nMapToIdx))
                 {
                     int nIdx = FindIdxInListSet(nMapToIdx, lstSet);
                     if (nIdx == -1)
                         assert(FALSE);
-                    mapTemp[nIdx].insert(*itSet);
+                    mapPartitionInfo[nIdx].insert(*itNodeId);
                 }
                 else
-                    mapTemp[-1].insert(*itSet);
+                    mapPartitionInfo[-1].insert(*itNodeId);
             }
-            if (mapTemp.size() > 1)// had distinguish
+            if (mapPartitionInfo.size() > 1)// had distinguish
             {
                 break;
             }
@@ -147,16 +157,20 @@ BOOL CDFA::PartitionGroups(list<set<int>> &lstSet, list<DFANodeRelation> &lstNod
 {
     BOOL                        bRet   = FALSE;
     list<set<int>>::iterator    it     = lstSet.begin();
-    map<int, set<int>>          mapTemp;
+    map<int, set<int>>          mapPartitionInfo;
+    //  used map to record the node can translate to which group, 
+    // the int(map key) is group id.
+    // the set<int> contain the node ID that can translate to the group.
 
     for ( ; it != lstSet.end(); )
     {
-        mapTemp.clear();
-        set<int> &setStates = *it;
-        CHECK_BOOL ( PartitionGroup(lstSet, setStates, lstNodeRelation, mapTemp) );
-        if (mapTemp.size() > 1)
+        mapPartitionInfo.clear();
+        set<int> &setOneGroup = *it;
+        CHECK_BOOL ( PartitionOneGroup(lstSet, setOneGroup, lstNodeRelation, mapPartitionInfo) );
+        if (mapPartitionInfo.size() > 1)// means that current group can partition
         {
-            for (map<int, set<int>>::iterator itM = mapTemp.begin(); itM != mapTemp.end(); itM++)
+            map<int, set<int>>::iterator itM = mapPartitionInfo.begin();
+            for ( ; itM != mapPartitionInfo.end(); itM++)
             {
                 try
                 {
@@ -167,7 +181,7 @@ BOOL CDFA::PartitionGroups(list<set<int>> &lstSet, list<DFANodeRelation> &lstNod
                     goto Exit0;
                 }
             }
-            it = lstSet.erase(it);
+            it = lstSet.erase(it);// if a group had partition, the group need delete in the list
 
         }
         else
@@ -179,7 +193,15 @@ Exit0:
     return bRet;
 }
 
-BOOL CDFA::MinimizeDFA(int                     nSetSize,
+/**
+    @brief     Minimize DFA
+    @param     nSetSize            node count 
+    @param     lstNodeRelation     node relation table
+    @param     setAcceptingIdx     set for Accepting status node's index
+    @param     lstSet              for save the result
+    @return    TRUE, success; otherwise means fail.
+*/
+BOOL CDFA::MinimizeDFA(int                     nNodeCount,
                        list<DFANodeRelation>   &lstNodeRelation,
                        set<int>                &setAcceptingIdx,
                        list<set<int>>          &lstSet
@@ -188,7 +210,7 @@ BOOL CDFA::MinimizeDFA(int                     nSetSize,
     BOOL            bRet            = FALSE;
     set<int>        setUnAccepting;
 
-    assert(nSetSize >= 1);
+    assert(nNodeCount >= 1);
     assert(setAcceptingIdx.size() != 0);
     assert(lstNodeRelation.size() != 0);
 
@@ -196,16 +218,16 @@ BOOL CDFA::MinimizeDFA(int                     nSetSize,
 
     try 
     {
+        lstSet.push_back(setAcceptingIdx);
+
         // get unAccepting set
-        for (int i = 0; i < nSetSize; i++)
+        for (int i = 0; i < nNodeCount; i++)
         {
             if (setAcceptingIdx.find(i) == setAcceptingIdx.end())
             {
                 setUnAccepting.insert(i);
             }
         }
-
-        lstSet.push_back(setAcceptingIdx);
         if (setUnAccepting.size() > 0)
         {
             lstSet.push_back(setUnAccepting);
@@ -252,31 +274,6 @@ BOOL CDFA::CreateSyntaxTree()
 Exit0:
 
     return bRet;
-}
-
-BOOL CDFA::IsNodeSetInList(set<CNodeInTree*> &setNodeNext, int &nIdx)
-{
-    list<set<CNodeInTree*>>::iterator it = m_lstSet.begin();
-    for (nIdx = 0; it != m_lstSet.end(); it++, nIdx++)
-    {
-        if (*it == setNodeNext)
-        {
-            return TRUE;
-        }
-    }
-    return FALSE;
-}
-
-BOOL CDFA::IsContainAcceptingState(set<CNodeInTree*> &setNode)
-{
-    for (set<CNodeInTree*>::iterator it = setNode.begin(); it != setNode.end(); it++)
-    {
-        if (eType_END == (*it)->m_pToken->GetType())
-        {
-            return TRUE;
-        }
-    }
-    return FALSE;
 }
 
 BOOL CDFA::CreateDFA(CNodeInTree *pNode)
@@ -383,4 +380,29 @@ BOOL CDFA::GetNextSet(set<CNodeInTree*> & setNodeTemp, set<CNodeInTree*> & setNo
     bRet = TRUE;
 Exit0:
     return bRet;
+}
+
+BOOL CDFA::IsNodeSetInList(set<CNodeInTree*> &setNodeNext, int &nIdx)
+{
+    list<set<CNodeInTree*>>::iterator it = m_lstSet.begin();
+    for (nIdx = 0; it != m_lstSet.end(); it++, nIdx++)
+    {
+        if (*it == setNodeNext)
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+BOOL CDFA::IsContainAcceptingState(set<CNodeInTree*> &setNode)
+{
+    for (set<CNodeInTree*>::iterator it = setNode.begin(); it != setNode.end(); it++)
+    {
+        if (eType_END == (*it)->m_pToken->GetType())
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
 }

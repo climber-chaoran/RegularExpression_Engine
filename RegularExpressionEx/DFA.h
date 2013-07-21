@@ -11,11 +11,11 @@ void TestMinimizeDFA();
 
 struct _DFANodeRelation
 {
-    int             m_nIdxCur;
+    int             m_nIdxFrom;
     unsigned char   m_ch;
-    int             m_nIdxNext;
+    int             m_nIdxTo;
     _DFANodeRelation::_DFANodeRelation(int nIdxCur, unsigned char ch, int nIdxNext)
-        :m_nIdxCur(nIdxCur), m_ch(ch), m_nIdxNext(nIdxNext)
+        :m_nIdxFrom(nIdxCur), m_ch(ch), m_nIdxTo(nIdxNext)
     {}
     //_DFANodeRelation::_DFANodeRelation();
 };
@@ -49,7 +49,7 @@ private:
     BOOL IsNodeSetInList(set<CNodeInTree*> &setNodeNext, int &nIdx);
     BOOL IsContainAcceptingState(set<CNodeInTree*> &setNode);
     BOOL PartitionGroups(list<set<int>> &lstSet, list<DFANodeRelation> &lstNodeRelation);
-    BOOL PartitionGroup(list<set<int>> &lstSet, set<int> &setStates, 
+    BOOL PartitionOneGroup(list<set<int>> &lstSet, set<int> &setStates, 
                         list<DFANodeRelation> &lstNodeRelation, map<int, set<int>> &mapTemp);
     BOOL FindRelationNode(list<DFANodeRelation> &lstNodeRelation, int nIdx, unsigned char ch, int &nMapToIdx);
     int  FindIdxInListSet(int nMapToIdx, list<set<int>> &lstSet);
